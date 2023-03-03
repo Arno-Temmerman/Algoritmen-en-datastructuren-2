@@ -19,22 +19,15 @@
 
   (begin
     (define-record-type disjoint-sets
-      (make t r)
+      (make t)
       disjoint-sets?
-      (t up-trees)
-      (r tree-ranks))
+      (t up-trees))
 
     ; new
     ; ( number ➙ disjoint-sets<ID> )
     (define (new size)
-      (define trees (make-vector size 0))
-      (define ranks (make-vector size 0))
-      (define sets (make trees ranks))
-      (let fill-singletons 
-        ((i 0))
-        (vector-set! trees i i)
-        (if (< (+ 1 i) size)
-            (fill-singletons (+ i 1))))
+      (define trees (make-vector size -1)) ; vul elke cel met rang -1
+      (define sets (make trees))
       sets)
 
     ; same-set?
@@ -46,23 +39,29 @@
     (define (find sets nmbr)
       (define trees (up-trees sets))
       (define (up-tree-rec elmt)
-        (if (not (eq? elmt (vector-ref trees elmt)))
-            (vector-set! trees elmt (up-tree-rec (vector-ref trees elmt))))
-        (vector-ref trees elmt))
+        ; Als waarde positief is, zijn we nog niet aan de root
+        (if (not (> 0 (vector-ref trees elmt)))
+            (begin
+              ; Doe padcompressie
+              (vector-set! trees elmt (up-tree-rec (vector-ref trees elmt)))
+              ; Geef de (positieve) ID van de root terug voor de volgende in de recursie
+              (vector-ref trees elmt))
+            ; Anders zijn we wel aan de root en geven we de ID van de root terug
+            elmt))
       (up-tree-rec nmbr))
 
     ; union!
     ; ( disjoint-sets<ID> ID ID ➙ disjoint-sets<ID> )
     (define (union! sets set1 set2)
-      (define ranks (tree-ranks sets))
       (define trees (up-trees sets))
-      (cond ((> (vector-ref ranks set1) 
-                (vector-ref ranks set2))
+      (cond ((< (vector-ref trees set1) 
+                (vector-ref trees set2))
              (vector-set! trees set2 set1))
-            ((= (vector-ref ranks set1) 
-                (vector-ref ranks set2))
+            ; Enkel wanneer twee sets van zelfde rank gejoind worden, moet de rank geüpdatet worden
+            ((= (vector-ref trees set1) 
+                (vector-ref trees set2))
              (vector-set! trees set1 set2)
-             (vector-set! ranks set2 (+ 1 (vector-ref ranks set2))))
+             (vector-set! trees set2 (- (vector-ref trees set2) 1)))
             (else
              (vector-set! trees set1 set2)))
       sets)))

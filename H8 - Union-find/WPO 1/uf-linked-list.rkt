@@ -2,7 +2,7 @@
 
 ; ADT voor een enkelgelinkte lijst zoals beschreven in de opgave dat één verzameling voorstelt.
 (define-library (uf-linked-list)
-  (export new from-scheme-list add!)
+  (export new from-scheme-list add! length append! list-leader head list-node-val)
   (import (except (scheme base) length map))
   (begin
 
@@ -86,7 +86,15 @@
       (size! ll (+ (size ll) 1))
       ll)
 
-    ; Welke functie(s) hebben we in dit ADT nog nodig om 'union!' en 'find' efficiënt te implementeren?
- 
+    ;; TOEGEVOEGD: voor union! moet je gelinkte lijsten kunnen concateneren.
+    (define (append! ll-1 ll-2)
+      (let loop
+        ((curr (head ll-2)))
+        (if (not (null? curr))
+            (begin (list-leader! curr (head ll-1))
+                   (loop (list-node-next curr)))))
+      (list-node-next! (rear ll-1) (head ll-2))
+      (rear! ll-1 (rear ll-2))
+      (size! ll-1 (+ (size ll-1) (size ll-2)))
+      ll-1)
     ))
-

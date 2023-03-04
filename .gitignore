@@ -44,6 +44,7 @@ relative/path/to/dir/anotherfile
 
 #common document extensions (case insensitive)
 **.1
+**.2
 **.[bB][aA][kK]
 **.[pP][dD][fF]
 **.[dD][oO][cC]
@@ -158,4 +159,5 @@ relative/path/to/dir/anotherfile
 **.[wW][mM][aA]
 **.[wW][vV]
 
-# Some particular files
+# Include opgave.pdf
+!opgave.pdf

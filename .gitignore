@@ -161,3 +161,6 @@ relative/path/to/dir/anotherfile
 
 # Include opgave.pdf
 !opgave.pdf
+
+# Particular folders
+Oplossingen_WPO

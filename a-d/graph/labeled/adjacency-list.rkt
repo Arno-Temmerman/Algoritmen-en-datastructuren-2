@@ -12,27 +12,34 @@
 ;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 ;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 
-(define-library (weighted-graph)
-  (export new weighted-graph? order directed? nr-of-edges 
+;; b) Net zoals bij ongelabelde grafen is de adjacency list representatie
+;;    voordeliger wanneer we te maken hebben met ijle grafen.
+;;    Het nadeel t.o.v. de gelabelde graf implementatie met een adjacency matrix is dat het
+;;    opvragen van de label van een edge in O(|V|) gebeurt, terwijl dat met de matrix in O(1) kan.
+
+(define-library (labeled-graph)
+  (export new labeled-graph? order directed? nr-of-edges 
           for-each-node for-each-edge
           add-edge! delete-edge!
-          adjacent? weight)
+          adjacent?
+          label label! edge-label)
   (import (scheme base))
   (begin
  
-    (define-record-type weighted-graph
-      (make d n s)
-      weighted-graph?
+    (define-record-type labeled-graph
+      (make d n s nl)
+      labeled-graph?
       (d directed?)
       (n nr-of-edges nr-of-edges!)
-      (s storage))
+      (s storage)
+      (nl node-labels node-labels!))
 
     (define make-graph-edge cons)
-    (define graph-edge-weight car)
+    (define graph-edge-label car)
     (define graph-edge-to cdr)
  
-    (define (new directed order)
-      (make directed 0 (make-vector order '())))
+    (define (new directed nr-of-nodes)
+      (make directed 0 (make-vector nr-of-nodes '()) (make-vector nr-of-nodes 'no-label)))
 
     (define (order graph)
       (vector-length (storage graph)))
@@ -41,7 +48,7 @@
       (define lists (storage graph))
       (let iter-nodes
         ((node 0))
-        (proc node)
+        (proc node (label graph node))
         (if (< (+ node 1) (vector-length lists))
             (iter-nodes (+ node 1))))
       graph)
@@ -52,13 +59,13 @@
         ((edges row))
         (if (not (null? edges))
             (let ((edge (car edges)))
-              (proc (graph-edge-weight edge) (graph-edge-to edge))
+              (proc (graph-edge-to edge) (graph-edge-label edge))
               (iter-edges (cdr edges)))))
       graph)
  
-    (define (add-edge! graph from to weight)
+    (define (add-edge! graph from to label)
       (define lists (storage graph))
-      (define edge (make-graph-edge weight to))
+      (define edge (make-graph-edge label to))
       (define (insert-sorted edge prev next! next)
         (cond 
           ((or (null? next)
@@ -75,7 +82,7 @@
       (if (insert-sorted edge '() (head-setter from) (vector-ref lists from))
           (nr-of-edges! graph (+ 1 (nr-of-edges graph))))
       (if (not (directed? graph))
-          (let ((reverse (make-graph-edge weight from)))
+          (let ((reverse (make-graph-edge label from)))
             (insert-sorted reverse '() (head-setter to) (vector-ref lists to))))
       graph)
  
@@ -101,21 +108,18 @@
       graph)
  
     (define (adjacent? graph from to)
-      (not (= (weight graph from to) +inf.0)))
- 
-    (define (weight graph from to)
-      (define lists (storage graph))
-      (if (= from to)
-          0
-          (let search-sorted
-            ((current (vector-ref lists from)))
-            (cond
-              ((or (null? current)
-                   (< (graph-edge-to (car current)) to))
-               +inf.0)
-              ((= (graph-edge-to (car current)) to)
-               (graph-edge-weight (car current)))
-              (else
-               (search-sorted (cdr current)))))))
+      (not (= (label graph from to) +inf.0)))
+    
+    (define (label! graph node label)
+      (vector-set! (node-labels graph) node label))
+    
+    (define (label graph node)
+      (vector-ref (node-labels graph) node))
+
+    (define (edge-label graph from to)
+      (define rows (storage graph))
+      (if (eq? (vector-ref (cdr (vector-ref rows from)) to) 'no-label)
+          #f
+          (vector-ref (cdr (vector-ref rows from)) to)))
     )
   )

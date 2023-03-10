@@ -14,22 +14,24 @@
 
 (define-library
   (disjoint-sets)
-  (export new disjoint-sets? find union! same-set?)
+  (export new disjoint-sets? find union! same-set?
+          number-of-sets)
   (import (scheme base))
 
   (begin
     (define-record-type disjoint-sets
-      (make t r)
+      (make t r ns)
       disjoint-sets?
       (t up-trees)
-      (r tree-ranks))
+      (r tree-ranks)
+      (ns number-of-sets number-of-sets!))
 
     ; new
     ; ( number ➙ disjoint-sets<ID> )
     (define (new size)
       (define trees (make-vector size 0))
       (define ranks (make-vector size 0))
-      (define sets (make trees ranks))
+      (define sets (make trees ranks size))
       (let fill-singletons 
         ((i 0))
         (vector-set! trees i i)
@@ -56,15 +58,17 @@
     (define (union! sets set1 set2)
       (define ranks (tree-ranks sets))
       (define trees (up-trees sets))
-      (cond ((> (vector-ref ranks set1) 
-                (vector-ref ranks set2))
-             (vector-set! trees set2 set1))
-            ((= (vector-ref ranks set1) 
-                (vector-ref ranks set2))
-             (vector-set! trees set1 set2)
-             (vector-set! ranks set2 (+ 1 (vector-ref ranks set2))))
-            (else
-             (vector-set! trees set1 set2)))
+      (when (not (same-set? set1 set2))
+        (number-of-sets! sets (- (number-of-sets sets) 1))
+        (cond ((> (vector-ref ranks set1) 
+                  (vector-ref ranks set2))
+               (vector-set! trees set2 set1))
+              ((= (vector-ref ranks set1) 
+                  (vector-ref ranks set2))
+               (vector-set! trees set1 set2)
+               (vector-set! ranks set2 (+ 1 (vector-ref ranks set2))))
+              (else
+               (vector-set! trees set1 set2))))
       sets)))
 
 ; Voorbeeld: unie van x en y

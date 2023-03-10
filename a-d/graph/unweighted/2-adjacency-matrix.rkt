@@ -12,20 +12,33 @@
 ;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 ;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 
+;; a) Door een "disjoint-sets" bij te houden die elke node in een singleton bijhoudt.
+;;    Voor elke edge die toegevoegd wordt, finden we de deelverzamelingen van de from en to nodes
+;;    om vervolgens de union te nemen. De "disjoint-sets" van een samenhangende graf zal uit juist
+;;    1 deelverzameling bestaan.
+
+;; b) Voor gerichte grafen. disjoint-sets hebben immers geen notie van richting.
+
+;; e) delete-edge!: Je zou de disjoint-sets op de juiste manier terug uit elkaar moeten trekken.
+;;    Moeilijk en inefficiënt.
+
 (define-library (unweighted-graph)
   (export new unweighted-graph? order nr-of-edges directed?
           for-each-node for-each-edge
           add-edge! delete-edge! 
-          adjacent?)
-  (import (scheme base))
+          adjacent?
+          connection? connected?)
+  (import (scheme base)
+          (prefix (a-d disjoint-sets wpo2-2-optimized) ds:))
   (begin
     
     (define-record-type unweighted-graph
-      (make d n s)
+      (make d n s ds)
       unweighted-graph?
       (d directed?)
       (n nr-of-edges nr-of-edges!)
-      (s storage))
+      (s storage)
+      (ds disjoint-sets))
            
     (define (new directed order)
       (define (make-row i)
@@ -40,7 +53,8 @@
               (vector-set! rows (- row 1) (make-row row))
               (if (< row order)
                   (for-all (+ row 1))
-                  rows))))
+                  rows))
+            (ds:new order)))
   
     (define (order graph)
       (vector-length (storage graph)))
@@ -67,9 +81,11 @@
       (define row-idx (if (directed? graph) from (max from to)))
       (define col-idx (if (directed? graph) to (min from to)))
       (define row (vector-ref rows row-idx))
+      (define set (disjoint-sets graph))
       (when (not (vector-ref row col-idx))
         (vector-set! row col-idx #t)
         (nr-of-edges! graph (+ 1 (nr-of-edges graph))))
+      (ds:union! set (ds:find set from) (ds:find set to))
       graph)
  
     (define (delete-edge! graph from to)
@@ -90,5 +106,12 @@
           (and (not (= from to))
                (vector-ref (vector-ref rows (max from to)) 
                            (min from to)))))
+
+    (define (connection? graph from to)
+      (define ds (disjoint-sets graph))
+      (ds:same-set? (ds:find ds from) (ds:find ds to)))
+
+    (define (connected? graph)
+      (= 1 (ds:number-of-sets (disjoint-sets graph))))
     )
   )

@@ -53,10 +53,23 @@
   ;; van die knoop tot de wortel
   (define parent-vector (make-vector (order g) #f))
 
+  (define (tracer current-node)
+    (define (display-parent-iter node)
+      (let ((parent (vector-ref parent-vector node)))
+        (when parent
+          (display parent)
+          (when (vector-ref parent-vector parent)
+            (display " ")
+            (display-parent-iter parent)))))
+    (display "Parents van node ")(display current-node)(display ": ")
+    (display-parent-iter current-node)(newline))
+
   (bft g
        root-nop ;; root-discovered
-       node-nop ;; node-discovered
-       edge-nop ;; edge-discovered
+       (lambda (node)
+         (tracer node)) ;; node-discovered
+       (lambda (from to)
+         (vector-set! parent-vector to from)) ;; edge-discovered
        edge-nop ;; edge-bumped
        ;; (roots)
        ))

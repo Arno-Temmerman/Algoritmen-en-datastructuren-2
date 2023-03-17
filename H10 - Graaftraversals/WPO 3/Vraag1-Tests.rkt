@@ -19,8 +19,13 @@
   (define parent-stack '())
   (dft g
        root-nop ;; root-discovered
-       node-nop ;; node-discovered
-       node-nop ;; node-processed
+       (lambda (node)
+         (display "Parents van node ")(display node)(display ": ")(display parent-stack) (newline)
+         (set! parent-stack (cons node parent-stack))) ;; node-discovered
+       ; stack push from
+       (lambda (node)
+         (set! parent-stack (cdr parent-stack))) ;; node-processed
+       ;; stack pop
        edge-nop ;; edge-discovered
        edge-nop ;; edge-processed
        edge-nop ;; edge-bumped

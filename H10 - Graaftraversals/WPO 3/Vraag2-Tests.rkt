@@ -3,6 +3,14 @@
 ;; Algoritmen en datastructuren II
 ;; Vraag 2 - DFT & BFT als routeplanner
 
+;; a) Adjacency list representatie is het meest geschikt voor het opslaan van
+;;    wegennetwerken omdat een wegnetwerk een ijle graaf vormt. Slechts enkele
+;;    steden zijn rechtstreeks met elkaar verbonden via een snelweg.
+;;    Bij deze representatie is het gebruikte geheugen voor het voorstellen van de bogen
+;;    evenredig met het aantal effectief bestaande bogen. Bij de adjacency
+;;    matrix representatie is dit geheugengebruik altijd evenredig aan het 
+;;    maximaal aantal mogelijke knopen omdat ook "niet-bogen" opgeslagen worden.
+
 (import (scheme base)    
         (scheme write)
         (a-d graph labeled config)

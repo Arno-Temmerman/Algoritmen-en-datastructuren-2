@@ -69,12 +69,27 @@
   (define parent-vector (make-vector (order g) #f))
   ;; Ga breedte-eerst door de graaf en
   ;; geef een route van start naar goal
+  
+  (define (route-list from-node)
+    (define route '())
+    (define (iter node)
+      (let ((parent (vector-ref parent-vector node)))
+        (set! route (cons node route))
+        (if parent
+            (iter parent))))
+    (iter from-node)
+    route)
+  
   (bft g
-       node-nop ;; root-discovered
-       node-nop ;; node-processed
-       edge-nop ;; edge-discovered
-       edge-nop ;; edge-numped
-       (list start))) ;; roots
+       root-nop                      ;root-discovered
+       (lambda (node label)          ;node-discovered
+         (not (eq? node goal)))      ;stopt op #f
+       (lambda (from to edge-label)  ;edge-discovered
+         (vector-set! parent-vector to from))
+       edge-nop                      ;edge-bumped
+       (list start))                 ;geef start-node als enige root!
+  
+  (display-route g (route-list goal)))
 
 
 ;;Testen:

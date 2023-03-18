@@ -44,14 +44,18 @@
   ;; Ga diepte eerst door de graaf en
   ;; geef een route van start naar goal
   (dft g
-       root-nop ;; root-discovered
-       (lambda (node node-label) ;; node-discovered
-         (not (eq? node goal)))  ;; stopt op #f
-       node-nop ;; node-processed
-       edge-nop ;; edge-discovered
-       edge-nop ;; edge-processed
-       edge-nop ;; edge-bumped
-       (list start))) ;; roots
+       root-nop                      ;root-discovered
+       (lambda (node node-label)     ;node-discovered
+         (set! route (cons node route))
+         (not (eq? node goal)))      ;stop on #f
+       node-nop                      ;node-processed
+       edge-nop                      ;edge-discovered
+       (lambda (from to edge-label)  ;edge-processed
+         (set! route (cdr route)))
+       edge-nop                      ;edge-bumped
+       (list start))                 ;geef start-node als enige root!
+  
+  (display-route g (reverse route)))
        
 
 ;;Testen:

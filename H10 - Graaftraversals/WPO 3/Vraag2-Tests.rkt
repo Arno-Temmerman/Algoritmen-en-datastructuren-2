@@ -97,3 +97,25 @@
 (routeplanner-bft highways-belgium Oostende Aarlen)(newline)
 (routeplanner-bft highways-belgium La_Louviere Zeebrugge)(newline)
 (newline)
+
+;; d) BFT is het meest geschikt. Alleen BFT garandeert dat de route met de 
+;;    kortste afstand (minimaal aantal tussenliggende steden) gevonden wordt. 
+;;    Dit is zo omdat BFT, beginnend uit het startpunt, de naburige steden 
+;;    niveau per niveau af bezoekt. Met andere woorden: een stad op afstand X
+;;    van het startpunt zal pas overwogen worden door BFT als alle steden op 
+;;    afstand X-1 niet overeenkomen met de bestemming. DFT zal ook een traject
+;;    vinden maar doordat er eerst in de diepte gezocht wordt garandeert DFT 
+;;    niet dat de bestemming in zo min mogelijk stappen gevonden wordt.
+;;    
+;;    Voorbeelden:
+;;     * Oostende-Aarlen met DFT:
+;;          Oostende --[E40]--> Brugge --[E40]--> Gent --[E17]--> 
+;;          Kortrijk --[E403]--> Doornik --[E429]--> Halle--[E19]-->  
+;;          Brussel --[A12]--> Boom --[A12]-->Antwerpen --[E313]-->  
+;;          Hasselt --[E313]--> Luik --[E42]-->Namen --[E411]--> 
+;;          Neufchateau --[E25/E411]--> Aarlen
+;;
+;;     * Oostende-Aarlen met BFT:
+;;          Oostende --[E40]--> Brugge --[E40]--> Gent --[E40]-->  
+;;          Aalst --[E40]--> Brussel --[E411]--> Namen --[E411]--> 
+;;          Neufchateau --[E25/E411]--> Aarlen

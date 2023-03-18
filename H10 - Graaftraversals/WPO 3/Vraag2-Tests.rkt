@@ -19,6 +19,26 @@
         (a-d graph-traversing bft-labeled)
         (a-d graph examples undirected-labeled-unweighted)) 
 
+;; Hulpfunctie om routes af te beelden:
+(define (display-route route-graph town-nodes)
+  (define (iter towns count)
+    (let ((from (car towns)))
+      (display (label route-graph from))
+      (if (not (null? (cdr towns)))
+          (let* ((to (cadr towns)))
+            (display " --[")
+            (display (edge-label route-graph from to))
+            (display "]--> ")
+            (iter (cdr towns) (+ count 1)))
+          count)))
+  (if (and (list? town-nodes) (not (null? town-nodes))
+           (not (null? (cdr town-nodes))))             ;minstens 2 nodes
+      (let ((towns-in-between (- (iter town-nodes 0) 1)))
+        (display " (")
+        (display towns-in-between)
+        (display " towns in between)")(newline))
+      (display "Not a valid route!")))
+
 (define (routeplanner-dft g start goal)
   (define route '())
   ;; Ga diepte eerst door de graaf en

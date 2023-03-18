@@ -19,7 +19,7 @@
          adjacent? 
          label label! edge-label)
  (import (scheme base)
-         ; (a-d graph labeled adjacency-matrix)
-         (a-d graph labeled adjacency-list) ;As exercise!
+         (a-d graph labeled adjacency-matrix)
+         ; (a-d graph labeled adjacency-list) ;As exercise!
          )
  )

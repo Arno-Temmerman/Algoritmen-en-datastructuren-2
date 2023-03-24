@@ -18,6 +18,8 @@
   (define bridges '())
 
   (define nr-of-comps 0)
+  (define curr-comp   0)
+  (define comp-vector (make-vector (order g) -1))
 
   (dft g
        ;; root-discovered
@@ -57,7 +59,7 @@
              (vector-set! highest-back-edges from
                           (min (vector-ref preorder-numbers to)
                                (vector-ref highest-back-edges from))))))
-  (list bridges nr-of-comps))
+  (list bridges nr-of-comps comp-vector))
 
 ;; Extra graaf
 (define zwaluw

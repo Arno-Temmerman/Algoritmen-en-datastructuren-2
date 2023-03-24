@@ -20,6 +20,7 @@
   (define nr-of-comps 0)
   (define curr-comp   0)
   (define comp-vector (make-vector (order g) -1))
+  (define stack (stack:new))
 
   (dft g
        ;; root-discovered
@@ -31,7 +32,8 @@
        (lambda (node)
          (vector-set! preorder-numbers node preorder-time)
          (vector-set! highest-back-edges node preorder-time)
-         (set! preorder-time (+ preorder-time 1)))
+         (set! preorder-time (+ preorder-time 1))
+         (stack:push! stack node))
        ;; node-processed
        node-nop
        ;; edge-discovered

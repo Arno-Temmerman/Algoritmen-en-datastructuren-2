@@ -22,10 +22,18 @@
   (define comp-vector (make-vector (order g) -1))
   (define stack (stack:new))
 
+  ;; Hulpmethode om curr-comps van component te corrigeren
+  (define (split-comp! endnode)
+  (let ((top (stack:top stack)))
+    (vector-set! eccs top nr-of-comps)
+    (if (not (eq? (stack:pop! stack) endnode))
+        (pop-comp! endnode))))
+  
   (dft g
        ;; root-discovered
        (lambda (root)
-         (set! nr-of-comps (+ nr-of-comps 1)))
+         (set! nr-of-comps (+ nr-of-comps 1))
+         (set! curr-comp   nr-of-comps))
        ;; node-discovered
        ;; registreer het pre-order nummer van de knoop
        ;; en zet de hoogste terugboog op jezelf
@@ -33,6 +41,7 @@
          (vector-set! preorder-numbers node preorder-time)
          (vector-set! highest-back-edges node preorder-time)
          (set! preorder-time (+ preorder-time 1))
+         (vector-set! comp-vector node curr-comp)
          (stack:push! stack node))
        ;; node-processed
        node-nop
@@ -50,7 +59,8 @@
          (when (= (vector-ref highest-back-edges to)
                   (vector-ref preorder-numbers to))
            (set! bridges (cons (cons from to) bridges))
-           (set! nr-of-comps (+ nr-of-comps 1))))
+           (set! nr-of-comps (+ nr-of-comps 1))
+           (split-comp! to)))
        ;; edge-bumped
        ;; boog ontdekt naar een reeds bezochte knoop!
        ;; als het niet je ouder is, dan kan het een terugboog zijn

@@ -22,11 +22,25 @@
   
   (define nr-of-comps 0)
   (define arts (make-vector (order g) '()))
+  (define nodestack (stack:new))
+  
+  ;; Hulpfunctie pop-comp!
+  ;; Pop nodes t.e.m. de 'to' node van de stack.
+  (define (pop-comp! endnode)
+    (let ((top (stack:top nodestack)))
+      (when (>= (vector-ref preorder-numbers top)
+                (vector-ref preorder-numbers endnode))
+        (vector-set! arts top (cons nr-of-comps (vector-ref arts top)))
+        (stack:pop! nodestack)
+        (pop-comp! endnode))))
+  
   (dft g
        ;; root-discovered
        ;; registreer de huidige root en zet zijn
        ;; branch count op 0
        (lambda (root)
+         (unless (stack:empty? nodestack)
+           (stack:pop! nodestack))
          (set! current-root root)
          (set! branch-count 0))
        ;; node-discovered
@@ -35,7 +49,8 @@
        (lambda (node)
          (vector-set! preorder-numbers node preorder-time)
          (vector-set! highest-back-edges node preorder-time)
-         (set! preorder-time (+ preorder-time 1)))
+         (set! preorder-time (+ preorder-time 1))
+         (stack:push! nodestack node)) ; push nodes op de stack
        ;; node-processed
        ;; kijk of de afgewerkte knoop de wortel is
        ;; zoja, kijk dan of die 2 of meer branches heeft
@@ -69,8 +84,9 @@
          ;; in node-processed.
          (when (>= (vector-ref highest-back-edges to)
                    (vector-ref preorder-numbers from))
-           (vector-set! articulation-points from #t)))
+           (vector-set! articulation-points from #t)
            (set! nr-of-comps (+ nr-of-comps 1))
+           (pop-comp! to)
            (vector-set! arts from (cons nr-of-comps (vector-ref arts from)))))
        ;; edge-bumped
        ;; een boog naar een reeds bezochte knoop! als dit niet
@@ -81,7 +97,7 @@
              (vector-set! highest-back-edges from
                           (min (vector-ref preorder-numbers to)
                                (vector-ref highest-back-edges from))))))
-  articulation-points)
+  (list articulation-points nr-of-comps arts))
 
 ;; Extra graaf
 (define zwaluw

@@ -25,9 +25,9 @@
   ;; Hulpmethode om curr-comps van component te corrigeren
   (define (split-comp! endnode)
   (let ((top (stack:top stack)))
-    (vector-set! eccs top nr-of-comps)
+    (vector-set! comp-vector top nr-of-comps)
     (if (not (eq? (stack:pop! stack) endnode))
-        (pop-comp! endnode))))
+        (split-comp! endnode))))
   
   (dft g
        ;; root-discovered

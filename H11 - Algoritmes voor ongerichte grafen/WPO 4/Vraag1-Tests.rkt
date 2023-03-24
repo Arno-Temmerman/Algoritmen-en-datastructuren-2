@@ -17,9 +17,12 @@
   (define highest-back-edges (make-vector (order g) -1))
   (define bridges '())
 
+  (define nr-of-comps 0)
+
   (dft g
        ;; root-discovered
-       root-nop
+       (lambda (root)
+         (set! nr-of-comps (+ nr-of-comps 1)))
        ;; node-discovered
        ;; registreer het pre-order nummer van de knoop
        ;; en zet de hoogste terugboog op jezelf
@@ -42,7 +45,8 @@
                            (vector-ref highest-back-edges from)))
          (when (= (vector-ref highest-back-edges to)
                   (vector-ref preorder-numbers to))
-           (set! bridges (cons (cons from to) bridges))))
+           (set! bridges (cons (cons from to) bridges))
+           (set! nr-of-comps (+ nr-of-comps 1))))
        ;; edge-bumped
        ;; boog ontdekt naar een reeds bezochte knoop!
        ;; als het niet je ouder is, dan kan het een terugboog zijn
@@ -53,7 +57,7 @@
              (vector-set! highest-back-edges from
                           (min (vector-ref preorder-numbers to)
                                (vector-ref highest-back-edges from))))))
-  bridges)
+  (list bridges nr-of-comps))
 
 ;; Extra graaf
 (define zwaluw

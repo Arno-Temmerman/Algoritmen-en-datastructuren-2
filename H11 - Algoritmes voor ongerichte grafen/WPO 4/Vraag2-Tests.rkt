@@ -19,6 +19,8 @@
   (define current-root '()) ; we onthouden de root
   (define branch-count 0) ; we tellen hoeveel tree-edges de root heeft
 
+  
+  (define nr-of-comps 0)
   (dft g
        ;; root-discovered
        ;; registreer de huidige root en zet zijn
@@ -67,6 +69,7 @@
          (when (>= (vector-ref highest-back-edges to)
                    (vector-ref preorder-numbers from))
            (vector-set! articulation-points from #t)))
+           (set! nr-of-comps (+ nr-of-comps 1))
        ;; edge-bumped
        ;; een boog naar een reeds bezochte knoop! als dit niet
        ;; je parent is, dan is het een terugboog. Kijk of je

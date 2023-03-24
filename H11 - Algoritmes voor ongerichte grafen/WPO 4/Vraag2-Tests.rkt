@@ -21,6 +21,7 @@
 
   
   (define nr-of-comps 0)
+  (define arts (make-vector (order g) '()))
   (dft g
        ;; root-discovered
        ;; registreer de huidige root en zet zijn
@@ -70,6 +71,7 @@
                    (vector-ref preorder-numbers from))
            (vector-set! articulation-points from #t)))
            (set! nr-of-comps (+ nr-of-comps 1))
+           (vector-set! arts from (cons nr-of-comps (vector-ref arts from)))))
        ;; edge-bumped
        ;; een boog naar een reeds bezochte knoop! als dit niet
        ;; je parent is, dan is het een terugboog. Kijk of je

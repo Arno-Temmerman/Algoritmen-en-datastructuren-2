@@ -30,7 +30,7 @@
 (define (mst-kruskal g)
   (define edges (all-edges g))
   (define n-e (vector-length edges))
-  (define forest '()) ;; TODO vervang dit door een graaf
+  (define forest (new #f (order g)))
   (define node-sets (dset:new (order g))) ;; disjoint set ADT om cycli na te gaan.
   (quicksort edges (lambda (edge1 edge2) (< (cadr edge1) (cadr edge2)))) ; sorteer alle bogen van de graaf volgens gewicht
   (do ((edge-idx 0 (+ edge-idx 1)))
@@ -42,7 +42,7 @@
            (from-set (dset:find node-sets from))
            (to-set (dset:find node-sets to)))
       (when (not (dset:same-set? from-set to-set)) ; boog vormt geen cyclus
-        (set! forest (cons (list from weight to) forest)) ; voeg boog toe aan het bos
+        (add-edge! forest from to weight) ; voeg boog toe aan het bos
         (dset:union! node-sets from-set to-set)))))
 
 
@@ -62,7 +62,7 @@
 ;; Pas de uitvoer van de procedure aan.
 
 (define (mst-prim-jarnik g)
-  (define tree (make-vector (order g) '())) ;; TODO: vervang door graaf
+  (define tree (new #f (order g)))
   (define pq-ids (make-vector (order g) '())) ;; hou voor iedere knoop zijn "positie" in de priority queue bij
   (define (track-ids id node weight) 
     (vector-set! pq-ids node id))
@@ -70,6 +70,15 @@
     (vector-ref pq-ids node))
   (define (pty< edge1 edge2) 
     (< (cdr edge1) (cdr edge2)))
+
+  ; Hulpprocedure
+  (define (degree g node)
+    (define d 0)
+    (for-each-edge g
+                   node
+                   (lambda (to weight)
+                     (set! d (+ d 1))))
+    d)
 
   ; priority queue van nodes (items) uit de graaf die we in het bos willen opnemen
   ; De prioriteit is een cons-cel.
@@ -84,7 +93,9 @@
   (define (prim-jarnik-iter closest-node&edge)
     (define closest-node (car closest-node&edge)) ; to
     (define closest-edge (cdr closest-node&edge)) ; (from . weight)
-    (vector-set! tree closest-node closest-edge) ; closest-node wordt opgenomen in het bos via de boog closest-edge met bijbehorend gewicht
+    ; closest-node wordt opgenomen in het bos via de boog closest-edge met bijbehorend gewicht
+    (if (not (null? (car closest-edge)))
+        (add-edge! tree closest-node (car closest-edge) (cdr closest-edge)))
     ; Plaats onbezochte buren van closest-node in de PQ
     (for-each-edge
      g closest-node
@@ -92,7 +103,7 @@
        (define edge-to-to (cons closest-node weight)) ; maak een nieuwe priority voor to
        (if (null? (id-of to))
            (pq:enqueue! pq to edge-to-to track-ids)
-           (if (and (null? (vector-ref tree to))
+           (if (and (= (degree tree to) 0)
                     (pty< edge-to-to (pq:priority-of pq (id-of to))))
                (pq:reschedule! pq (id-of to) edge-to-to track-ids)))))
     (unless (pq:empty? pq)
@@ -100,7 +111,7 @@
 
   (for-each-node
    g (lambda (node)
-       (when (null? (vector-ref tree node))
+       (when (= (degree tree node) 0)
          (pq:enqueue! pq node (cons '() +inf.0) track-ids)
          (prim-jarnik-iter (pq:serve! pq track-ids))))) ; serve! geeft een node en zijn prioriteit terug in een cons-cel
 
@@ -158,7 +169,7 @@
                         (vector-set! edges first-free edge) ; store it in first-free
                         (find-minimals (+ edge-idx 1) (+ first-free 1)))))
           first-free))) 
-  (define tree '()) ;; TODO: vervang door graaf
+  (define tree (new #f (order g)))
   (do ((remaining-edges (select-edges n-e) (select-edges remaining-edges)))
     ((= remaining-edges 0) tree)
     (vector-map!
@@ -169,7 +180,7 @@
        (when (and (not (eq? edge infty-edge))
                   (not (dset:same-set? mst-1 mst-2))) ; mst-1 and mst-2 can be the same because of this very loop
          (dset:union! node-sets mst-1 mst-2)
-         (set! tree (cons edge tree)))
+         (add-edge! tree (car edge) (cddr edge) (cadr edge)))
        infty-edge))))
 
 

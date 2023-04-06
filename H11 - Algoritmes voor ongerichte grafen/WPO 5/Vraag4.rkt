@@ -58,7 +58,11 @@
            first-free))) 
    (define tree '())
    (do ((remaining-edges (select-edges n-e) (select-edges remaining-edges)))
-     ((= remaining-edges 0) tree)
+     ((= remaining-edges 0)
+      (map (lambda (edge)
+             (cons (dset:find node-sets (car edge))
+                   edge))
+           tree))
      (vector-map!
       selected-edges
       (lambda (idx edge)
@@ -79,3 +83,23 @@
 ;;Output Vraag 4
 ;;MST van graf cormen571split, gevonden door algoritme van Boruvka:
 ;;{{7 0 8 . 7} {7 6 6 . 8} {7 6 1 . 7} {5 3 9 . 4} {5 2 7 . 3} {5 2 4 . 5} {7 0 4 . 1}}
+
+;; b) Worst-case performantie: 
+;;     - dset:find: O(log(|V|))
+;;     - dset:find wordt door map opgeroepen voor elke edge in het
+;;       Minimale Spannings Bos (MSF), in de worst case is dat elke
+;;       edge van de graaf, dus we krijgen: O(|E|*log(|V|))
+;;     - Borůvka: O(|E|*log(|V|))
+;;    TOTAAL: O(|E|*log(|V|) + |E|*log(|V|)) = O(2*|E|*log(|V|)) = O(|E|*log(|V|))
+;;    --> Worst-case performantie is dezelfde als bij de originele implementatie
+;;
+;; Extra:
+;;    Geamortiseerde performantie:
+;;     - dset:find: O(α(|V|)
+;;     - dset:find wordt door map opgeroepen voor elke edge in het
+;;       Minimale Spannings Bos (MSF), in de worst case is dat elke
+;;       edge van de graaf, dus we krijgen: O(|E|*α(|V|))
+;;     - Borůvka: O(|E|*log(|V|))
+;;    TOTAAL: O(|E|*log(|V|) + |E|*α(|V|)) = O(|E| * (log(|V|) +  α(|V|)))  = O(|E|*log(|V|))
+;;            (want α(|V|) is een veel trager stijgende functie dan log(|V|))
+;;    --> Geamortiseerde performantie is dezelfde als bij de originele implementatie

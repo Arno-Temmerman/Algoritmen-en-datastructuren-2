@@ -29,6 +29,7 @@
 (define (mst-prim-jarnik g)
    (define tree (make-vector (order g) '()))
    (define pq-ids (make-vector (order g) '()))
+   (define mst-id 0)
    (define (track-ids id node weight) 
      (vector-set! pq-ids node id))
    (define (id-of node)
@@ -39,7 +40,7 @@
    (define (prim-jarnik-iter closest-node&edge)
      (define closest-node (car closest-node&edge)) ;; deze knoop toevoegen aan MST
      (define closest-edge (cdr closest-node&edge)) ;; edge waarlangs we gekomen zijn
-     (vector-set! tree closest-node closest-edge)
+     (vector-set! tree closest-node (cons mst-id closest-edge))
      (for-each-edge
       g closest-node
       (lambda (weight to)
@@ -53,6 +54,7 @@
        (prim-jarnik-iter (pq:serve! pq track-ids))))
    (for-each-node g (lambda (node)
                       (when (null? (vector-ref tree node))
+                        (set! mst-id (+ mst-id 1)) ; node onbereikbaar vanuit huidige tree -> volgende tree
                         (pq:enqueue! pq node (cons '() +inf.0) track-ids)
                         (prim-jarnik-iter (pq:serve! pq track-ids)))))
    tree)
@@ -69,3 +71,5 @@
 ;;#({1 () . +inf.0} {1 0 . 4} {2 () . +inf.0}
 ;;  {2 2 . 7} {2 3 . 9} {2 2 . 4}
 ;;  {1 7 . 1} {1 0 . 8} {1 6 . 6})
+
+;; b) Performance: still O(|E|*log(|V|))

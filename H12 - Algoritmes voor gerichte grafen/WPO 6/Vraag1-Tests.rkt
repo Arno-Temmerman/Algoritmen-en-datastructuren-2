@@ -27,8 +27,20 @@
 ;; TODO: Implementeer een versie van cyclic? dat zowel werkt voor gerichte
 ;; als ongerichte grafen
 (define (cyclic*? g)
-  (error 'cyclic*? "This has not been implemented yet."))
-
+  (define tree (make-vector (order g) '()))
+  (define cyclic #f)
+  (dft g
+       root-nop                       ;root-discovered
+       node-nop                       ;node-discovered
+       node-nop                       ;node-processed
+       (lambda (from to)              ;edge-discovered
+         (vector-set! tree from to))
+       edge-nop                       ;edge-processed
+       (lambda (from to)              ;edge-bumped
+         (when (not (eq? (vector-ref tree to) from)) ; test op echte terugbogen
+           (set! cyclic #t)
+           #f)))                      ;terminate the traversal once a cycle has been found
+  cyclic)
 
 ;; Voorbeeld grafen
 

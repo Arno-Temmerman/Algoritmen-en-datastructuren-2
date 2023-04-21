@@ -28,16 +28,20 @@
 ;; als ongerichte grafen
 (define (cyclic*? g)
   (define tree (make-vector (order g) '()))
+  (define processed (make-vector (order g) #f))
   (define cyclic #f)
   (dft g
        root-nop                       ;root-discovered
        node-nop                       ;node-discovered
-       node-nop                       ;node-processed
+       (lambda (node)
+         (vector-set! processed node #t)) ;node-processed
        (lambda (from to)              ;edge-discovered
          (vector-set! tree from to))
        edge-nop                       ;edge-processed
        (lambda (from to)              ;edge-bumped
-         (when (not (eq? (vector-ref tree to) from)) ; test op echte terugbogen
+         (when (if (directed? g)
+                   (not (vector-ref processed to))
+                   (not (eq? (vector-ref tree to) from))) ; test op echte terugbogen
            (set! cyclic #t)
            #f)))                      ;terminate the traversal once a cycle has been found
   cyclic)

@@ -24,8 +24,9 @@
     (make-2D-vector (order g)
                     (order g)
                     (lambda (i j)
-                      '()))) ;; TODO: initialiseer traclo-paths analoog aan traclo-distances
-                             ;; door rechtstreekse bogen al in te vullen.
+                      (if (adjacent? g i j)
+                          i
+                          '()))))
   (for-each-node
    g
    (lambda (via)
@@ -35,9 +36,15 @@
         (for-each-node
          g
          (lambda (to)
-           ;; TODO: update traclo-paths hier
-           (ij! 
-            traclo-distances 
+           (ij!
+            traclo-paths
+            from to (if (<= (ij? traclo-distances from to)
+                            (+ (ij? traclo-distances from via)
+                               (ij? traclo-distances via to)))
+                        (ij? traclo-paths from to)
+                        (ij? traclo-paths via to)))
+           (ij!
+            traclo-distances
             from to (min (ij? traclo-distances from to)
                          (+ (ij? traclo-distances from via)
                             (ij? traclo-distances via to))))))))))
@@ -63,11 +70,11 @@
 ;   #(8.0  5.0  1.0  6.0  4.0))
 
 ;; traclo-paths
-; #(#(() 2 3 4 0)
-;   #(3 () 3 1 0)
-;   #(3 2 () 1 0)
-;   #(3 2 3 () 0)
-;   #(3 2 3 4 ()))}
+; #(#(3 2 3 4 0)
+;   #(3 2 3 1 0)
+;   #(3 2 3 1 0)
+;   #(3 2 3 1 0)
+;   #(3 2 3 4 0)))
 
 ;; Belangrijk om te weten hoe je deze matrix moet lezen!
 ;; De cormen graaf wordt hier onder getoond als voorbeeld.

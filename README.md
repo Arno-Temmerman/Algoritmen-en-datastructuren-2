@@ -6,3 +6,4 @@
 * **WPO 4:** [Ongerichte graafalgoritmen](./H11%20-%20Algoritmes%20voor%20ongerichte%20grafen/WPO%204/opgave.pdf)
 * **WPO 5:** [Minimale Spanningsbossen](./H11%20-%20Algoritmes%20voor%20ongerichte%20grafen/WPO%205/opgave.pdf)
 * **WPO 6:** [Gerichte graafalgoritmen](./H12%20-%20Algoritmes%20voor%20gerichte%20grafen/WPO%206/opgave.pdf)
+* **WPO 7:** [Dynamisch programmeren](./H13%20-%20Dynamisch%20programmeren/WPO%207/opgave.pdf)

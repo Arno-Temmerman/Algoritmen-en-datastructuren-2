@@ -2,7 +2,7 @@
 (import (scheme base)
         (scheme write)
         (a-d scheme-tools)
-        (07-dynamisch-programmeren Opgave gridworld-mdp))
+        (a-d gridworld-mdp))
 
 ; Some testing environments
 (define default-discount 1)
@@ -90,8 +90,23 @@
     (let iter
       ((delta 0))
 
-      ;;; SOMETHING MISSING HERE... 
- 
+      ;;; SOMETHING MISSING HERE...
+      (do ((i (- (num-cols env) 1) (- i 1)))
+        ((= i -1))
+         (do ((j (- (num-rows env) 1) (- j 1)))
+           ((= j -1))
+            (let ((state (make-2D-cell i j))
+                  (v (ij? value-table i j)))
+              (unless (terminal? env state)
+                (ij! value-table i j (apply max (map (lambda (action)
+                                                       (let* ((next-state (transition env state action))
+                                                              (next-value (ij? value-table (get-x next-state) (get-y next-state))))
+                                                         (+ (reward env state action next-state)
+                                                            (* (discount env)
+                                                               next-value))))
+                                                     (actions env))))
+                (set! delta (max delta (abs (- v (ij? value-table i j)))))))))
+
       (if (< delta threshold)
           (lambda (state)
             (ij? value-table (get-x state) (get-y state)))
@@ -140,13 +155,13 @@
 ;;; All attempts work on small/simple environment
 (test-policies  (list (cons 'very-naive v*-very-naive)
                       (cons 'naive v*-naive)
-                      ;(cons 'dyn-prog (value-iteration 0.001))
+                      (cons 'dyn-prog (value-iteration 0.001))
                       )
                 (list env1 env2 env3))
 
 ;; However the very naive recursion does not scale well at all!
 ;; Do not try this on the "larger" environment (in terms of actions and states)
 (test-policies  (list (cons 'naive v*-naive)
-                      ;(cons 'dyn-prog (value-iteration 0.001))
+                      (cons 'dyn-prog (value-iteration 0.001))
                       )
                 (list env1 env2 env3 env4 env5 env6))

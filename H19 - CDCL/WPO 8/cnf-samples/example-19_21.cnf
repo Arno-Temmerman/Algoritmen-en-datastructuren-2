@@ -1,0 +1,21 @@
+c Course example 19.21
+c
+c CNF formula used as example to introduce CDCL
+c 10 variables: w x y t z r s a c b
+c 6 clauses: 
+c    !w or !a or c 
+c    !y or !a or b
+c    !z or s
+c    !x or !r or !s or a
+c    !z or !t or r
+c    !c or !b
+c
+c Solution: { 1 2 3 4 -5 6 -7 -8 9 -10 } aka {w x y t !z r !s !a c !b}
+c
+p cnf 10 6
+-1 -8 9 0
+-3 -8 10 0
+-5 7 0
+-2 -6 -7 8 0
+-5 -4 6 0
+-9 -10 0

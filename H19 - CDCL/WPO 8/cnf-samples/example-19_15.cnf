@@ -1,0 +1,17 @@
+c Course example 8.15
+c
+c Formula consisting of 5 literals and 4 clauses:
+c
+c (x v y v z) ^ (x v !y v a) ^ (y v !z v !a v b) ^ (a v b)
+c
+c For the DIMACS file, we'll map the literals to numbers:
+c x -> 1
+c y -> 2
+c z -> 3
+c a -> 4
+c b -> 5
+p cnf 5 4
+1 2 3 0
+1 -2 4 0
+2 -3 -4 5 0
+4 -5 0

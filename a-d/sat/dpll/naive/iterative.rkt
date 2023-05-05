@@ -19,7 +19,8 @@
           (a-d scheme-tools)
           (a-d sat cnf)
           (a-d sat logger)
-          (a-d sat interpretation))
+          (a-d sat interpretation)
+          (prefix (a-d stack linked) stack:))
   (begin
 
     (define (conflict? formula interp)
@@ -106,7 +107,12 @@
  
     ; DPLL algorithm WITH pure literal rule
     (define (dpll formula)
-      (define (dpll-rec interpret)
+      (define s (stack:new))
+      
+      (define (dpll-iter)
+        (if (stack:empty? s)
+            #f
+            (let ((interpret (stack:pop! s)))
         (log-info "Current interpretation before unit prop:" (interpret->string interpret))
         (unit-prop-naive! formula interpret)
         (log-info "Current interpretation after unit prop:" (interpret->string interpret))
@@ -114,14 +120,18 @@
         (pure-lits! formula interpret)
         (log-debug "Eliminating pure literals done.")
         (log-info "Current interpretation after pure lit elim:" (interpret->string  interpret))
+
         (cond ((conflict? formula interpret)
                (log-info "A conflicting clause was found.")
-               #f)
+               (dpll-iter))
               ((all-assigned? interpret)
                (log-info "Interpretation fully assigned, we have a solution!")
                interpret)
               (else (let ((x (find-unassigned-atom interpret)))
                       (log-debug "Expanding interpretation...")
-                      (or (dpll-rec (true! (from-interpret interpret) x))
-                          (dpll-rec (true! (from-interpret interpret) (negate x))))))))
-      (dpll-rec (new-interpret formula)))))
+                            (stack:push! s (true! (from-interpret interpret) x))
+                            (stack:push! s (true! (from-interpret interpret) (negate x)))
+                            (dpll-iter)))))))
+      
+      (stack:push! s (new-interpret formula))
+      (dpll-iter))))

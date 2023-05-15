@@ -160,14 +160,28 @@
               (car (vector-ref elems 1)))))
 
       (define (analyze-conflict confl-cls)
-        (if (has-two-or-more-lits-from-curr-dec-lvl? confl-cls)
+        (let loop
+          ((c-new confl-cls))
+        (if (has-two-or-more-lits-from-curr-dec-lvl? c-new)
             (let* ((l (youngest-literal confl-cls))
-                   (not-l (negate l)))
-              (analyze-conflict (resolve confl-cls
-                                         (twls:reason twls not-l)
-                                         l
-                                         not-l)))
-            confl-cls))
+                   (not-l (negate l))
+                   (c-next (if (memp (lambda (lit)
+                                       (same-literal? lit
+                                                      not-l))
+                                     (literals c-new))
+                            
+                               (resolve c-new
+                                        (twls:reason twls l)
+                                        not-l
+                                        l)
+                               c-new)))
+              
+                (twls:reason! twls l '())
+                (unknown! interpret l)
+                (twls:level! twls l -1)
+                (twls:time! twls l #f)
+                (loop c-next))
+              c-new)))
 
       (define (backjump! confl-cls lvl)
         (define (jump-iter)
